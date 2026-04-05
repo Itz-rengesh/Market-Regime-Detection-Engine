@@ -4,3 +4,4 @@ __pycache__/
 .ipynb_checkpoints/
 sp500.csv
 sp500_ready.csv
+data/

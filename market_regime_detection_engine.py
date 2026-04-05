@@ -6,6 +6,8 @@ from hmmlearn.hmm import GaussianHMM
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import datetime
+import os
+import platform
 
 
 def generate_gbm(start_price=100, mu=0.08, sigma=0.2, days=500, seed=42):
@@ -65,7 +67,13 @@ def compute_regime_stats(df, labels, n_states):
 # =============================
 # Visualization
 # =============================
+def ensure_data_dir():
+    if not os.path.exists('data'):
+        os.makedirs('data')
+    return 'data'
+
 def plot_regimes(df, labels, title="Price Chart by Regime"):
+    output_dir = ensure_data_dir()
     plt.figure(figsize=(14,6))
     palette = sns.color_palette("Set1", np.unique(labels).max()+1)
     for regime in np.unique(labels):
@@ -77,9 +85,12 @@ def plot_regimes(df, labels, title="Price Chart by Regime"):
     plt.xlabel('Date')
     plt.ylabel('Price')
     plt.tight_layout()
-    plt.show()
+    path = os.path.join(output_dir, 'regime_price_chart.png')
+    plt.savefig(path)
+    print(f"Saved: {path}")
 
 def plot_regime_probs(df, regime_probs):
+    output_dir = ensure_data_dir()
     plt.figure(figsize=(14,4))
     for i in range(regime_probs.shape[1]):
         plt.plot(df['date'], regime_probs[:,i], label=f'Regime {i}')
@@ -88,16 +99,21 @@ def plot_regime_probs(df, regime_probs):
     plt.ylabel('Probability')
     plt.legend()
     plt.tight_layout()
-    plt.show()
+    path = os.path.join(output_dir, 'regime_probabilities.png')
+    plt.savefig(path)
+    print(f"Saved: {path}")
 
 def plot_transition_matrix(transmat):
+    output_dir = ensure_data_dir()
     plt.figure(figsize=(6,5))
     sns.heatmap(transmat, annot=True, cmap='Blues', fmt='.2f', square=True)
     plt.title('Regime Transition Matrix')
     plt.xlabel('To Regime')
     plt.ylabel('From Regime')
     plt.tight_layout()
-    plt.show()
+    path = os.path.join(output_dir, 'transition_matrix.png')
+    plt.savefig(path)
+    print(f"Saved: {path}")
 
 
 # Main Function 
@@ -137,11 +153,21 @@ def main():
     stats = compute_regime_stats(df, labels, args.n_states)
     print("Regime Statistics:\n", stats)
 
-    # Plots
+    # Sequential Plot Display
+    print("\nDisplaying charts sequentially (Close the window to see the next one)...")
+    
+    # 1. Price Chart
     plot_regimes(df, labels)
+    plt.show()
+    
+    # 2. Regime Probabilities
     plot_regime_probs(df, regime_probs)
+    plt.show()
+    
+    # 3. Transition Matrix
     if transmat is not None:
         plot_transition_matrix(transmat)
+        plt.show()
 
 if __name__ == "__main__":
     main()
