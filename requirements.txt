@@ -4,5 +4,3 @@ matplotlib
 seaborn
 hmmlearn
 scikit-learn
-plotly
-streamlit
